@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, The OpenThread Authors.
+ *  Copyright (c) 2023, The OpenThread Authors.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -28,45 +28,59 @@
 
 /**
  * @file
- *   This file implements the OpenThread Tasklet API.
+ *   This file contains definitions for a simple CLI to control MDNS Server.
  */
+
+#ifndef CLI_MDNS_SERVER_CPP_
+#define CLI_MDNS_SERVER_CPP_
 
 #include "openthread-core-config.h"
 
-#include <openthread/tasklet.h>
+#include <openthread/mdns_server.h>
 
-#include "common/as_core_type.hpp"
-#include "common/code_utils.hpp"
-#include "common/locator_getters.hpp"
+#include "cli/cli_config.h"
+#include "cli/cli_output.hpp"
 
-using namespace ot;
+#if OPENTHREAD_CONFIG_MDNS_SERVER_ENABLE
 
-void otTaskletsProcess(otInstance *aInstance)
+namespace ot {
+namespace Cli {
+
+/**
+ * This class implements the MDNS Server CLI interpreter.
+ *
+ */
+class MdnsServer : private Output
 {
-    VerifyOrExit(otInstanceIsInitialized(aInstance));
-    AsCoreType(aInstance).Get<Tasklet::Scheduler>().ProcessQueuedTasklets();
+public:
+    typedef Utils::CmdLineParser::Arg Arg;
 
-exit:
-    return;
-}
+    /**
+     * Constructor
+     *
+     * @param[in]  aInstance            The OpenThread Instance.
+     * @param[in]  aOutputImplementer   An `OutputImplementer`.
+     *
+     */
+    MdnsServer(otInstance *aInstance, OutputImplementer &aOutputImplementer);
 
-void otTaskletExecute(otInstance *aInstance, otTaskletCb callback, void *context)
-{
-    VerifyOrExit(otInstanceIsInitialized(aInstance));
-    AsCoreType(aInstance).Get<GenericTasklet>().PostWithCb(callback, context);
+    /**
+     * This method interprets a list of CLI arguments.
+     *
+     * @param[in]  aArgs        A pointer an array of command line arguments.
+     *
+     */
+    otError Process(Arg aArgs[]);
 
-exit:
-    return;
-}
+private:
+    using Command = CommandEntry<MdnsServer>;
 
-bool otTaskletsArePending(otInstance *aInstance)
-{
-    bool retval = false;
-    VerifyOrExit(otInstanceIsInitialized(aInstance));
-    retval = AsCoreType(aInstance).Get<Tasklet::Scheduler>().AreTaskletsPending();
+    template <CommandId kCommandId> otError Process(Arg aArgs[]);
+};
 
-exit:
-    return retval;
-}
+} // namespace Cli
+} // namespace ot
 
-OT_TOOL_WEAK void otTaskletsSignalPending(otInstance *) {}
+#endif // OPENTHREAD_CONFIG_MDNS_SERVER_ENABLE
+
+#endif // CLI_MDNS_SERVER_CPP_

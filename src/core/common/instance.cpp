@@ -67,6 +67,7 @@ Instance::Instance(void)
 #if OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE
     , mTimerMicroScheduler(*this)
 #endif
+    , mGenericTasklet(*this)
     , mRadio(*this)
 #if OPENTHREAD_CONFIG_UPTIME_ENABLE
     , mUptime(*this)
@@ -103,6 +104,9 @@ Instance::Instance(void)
 #endif
 #if OPENTHREAD_CONFIG_DNSSD_SERVER_ENABLE
     , mDnssdServer(*this)
+#endif
+#if OPENTHREAD_CONFIG_MDNS_SERVER_ENABLE
+    , mMdnsServer(*this)
 #endif
 #if OPENTHREAD_CONFIG_DNS_DSO_ENABLE
     , mDnsDso(*this)

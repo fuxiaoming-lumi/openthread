@@ -1306,8 +1306,25 @@ public:
      */
     void SetClass(uint16_t aClass) { mClass = HostSwap16(aClass); }
 
+ /**
+     * This method sets the most significant bit of the resource record class field.
+     * As per RFC 6762, section 10.2, the cache-flush bit is NOT part of the resource record
+     * class. The cache-flush bit is the most significant bit of the second
+     * 16-bit word of a resource record in a Resource Record Section of a
+     * Multicast DNS message (the field conventionally referred to as the
+     * rrclass field), and the actual resource record class is the least
+     * significant fifteen bits of this field
+     */
+    void SetCacheFlushBit() { mClass |= HostSwap16(kCacheFlushBitFlag); }
+
     /**
-     * Returns the time to live field of the resource record.
+     * This method unsets the most significant bit of the resource record class field.
+     */
+
+    void UnSetCacheFlushBit() { mClass &= ~(HostSwap16(kCacheFlushBitFlag)); }
+
+    /**
+     * This method returns the time to live field of the resource record.
      *
      * @returns The time to live field of the resource record.
      *
@@ -1468,6 +1485,26 @@ public:
         return ReadRecord(aMessage, aOffset, RecordType::kType, aRecord, sizeof(RecordType));
     }
 
+    Error ReadFrom(const Message &aMessage, uint16_t aOffset);
+    /**
+     * This static method iterates over the resource records entries in a given message and modifies the TTL and the
+     * cache-flush bit.
+     *
+     * @param[in]     aMessage       The message in which to iterate over resource records.
+     *                               `aMessage.GetOffset()` MUST point to the start of DNS header.
+     * @param[in,out] aOffset        On input, the offset in @p aMessage pointing to the start of the first record.
+     *                               On exit, @p aOffset is updated to point to the byte
+     *                               after the last record that was iterated.
+     * @param[in,out] aNumRecords    On input, the maximum number of records to check (starting from @p aOffset).
+     *                               On exit, @p aNumRecords is updated to give the
+     *                               number of remaining records after @p aOffset.
+     *
+     * @retval kErrorNone         A record has beed updated. @p aOffset, @p aNumRecords are updated.
+     * @retval kErrorParse        Could not parse records from @p aMessage (e.g., ran out of bytes in @p aMessage).
+     *
+     */
+    static Error MarkRecordsAsLegacyUnicast(Message &aMessage, uint16_t &aOffset, uint16_t aNumRecords);
+
 protected:
     Error ReadName(const Message &aMessage,
                    uint16_t      &aOffset,
@@ -1479,6 +1516,7 @@ protected:
 
 private:
     static constexpr uint16_t kType = kTypeAny; // This is intended for used by `ReadRecord<RecordType>()` only.
+    static constexpr uint16_t kCacheFlushBitFlag = 0x8000; // This is intended for mDns Announcing feature.
 
     static Error FindRecord(const Message  &aMessage,
                             uint16_t       &aOffset,
@@ -1496,7 +1534,6 @@ private:
                             uint16_t        aMinRecordSize);
 
     Error CheckRecord(const Message &aMessage, uint16_t aOffset) const;
-    Error ReadFrom(const Message &aMessage, uint16_t aOffset);
 
     uint16_t mType;   // The type of the data in RDATA section.
     uint16_t mClass;  // The class of the data in RDATA section.
@@ -2636,7 +2673,24 @@ public:
      */
     void SetClass(uint16_t aClass) { mClass = HostSwap16(aClass); }
 
+    /**
+     * This method returns true if the class of the question contains the QU bit.
+     *
+     * @returns TRUE if the QU bit in the class field is set.
+     *
+     */
+    bool IsQuQuestion() { return mClass & kQuQuestionFlag; }
+
+    /**
+     * This method sets QU bit in the class  field of the question.
+     *
+     */
+    void SetQuQuestion() { mClass = mClass | kQuQuestionFlag; }
+
 private:
+    static constexpr uint16_t kQuQuestionFlag =
+        0x0080; // Flag in the Class field of a mDNS question that signals a unicast response.
+
     uint16_t mType;  // The type of the data in question section.
     uint16_t mClass; // The class of the data in question section.
 } OT_TOOL_PACKED_END;

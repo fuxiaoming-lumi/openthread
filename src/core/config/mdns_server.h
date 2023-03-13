@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, The OpenThread Authors.
+ *  Copyright (c) 2023, The OpenThread Authors.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -28,45 +28,31 @@
 
 /**
  * @file
- *   This file implements the OpenThread Tasklet API.
+ *   This file includes compile-time configurations for the MDNS Server.
+ *
  */
 
-#include "openthread-core-config.h"
+#ifndef CONFIG_MDNS_SERVER_H_
+#define CONFIG_MDNS_SERVER_H_
 
-#include <openthread/tasklet.h>
+/**
+ * @def OPENTHREAD_CONFIG_MDNS_SERVER_ENABLE
+ *
+ * Define to 1 to enable MDNS Server support.
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_MDNS_SERVER_ENABLE
+#define OPENTHREAD_CONFIG_MDNS_SERVER_ENABLE 0
+#endif
 
-#include "common/as_core_type.hpp"
-#include "common/code_utils.hpp"
-#include "common/locator_getters.hpp"
+/**
+ * @def OPENTHREAD_CONFIG_MDNS_SERVER_PORT
+ *
+ * Define the the MDNS Server port.
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_MDNS_SERVER_PORT
+#define OPENTHREAD_CONFIG_MDNS_SERVER_PORT 5353
+#endif
 
-using namespace ot;
-
-void otTaskletsProcess(otInstance *aInstance)
-{
-    VerifyOrExit(otInstanceIsInitialized(aInstance));
-    AsCoreType(aInstance).Get<Tasklet::Scheduler>().ProcessQueuedTasklets();
-
-exit:
-    return;
-}
-
-void otTaskletExecute(otInstance *aInstance, otTaskletCb callback, void *context)
-{
-    VerifyOrExit(otInstanceIsInitialized(aInstance));
-    AsCoreType(aInstance).Get<GenericTasklet>().PostWithCb(callback, context);
-
-exit:
-    return;
-}
-
-bool otTaskletsArePending(otInstance *aInstance)
-{
-    bool retval = false;
-    VerifyOrExit(otInstanceIsInitialized(aInstance));
-    retval = AsCoreType(aInstance).Get<Tasklet::Scheduler>().AreTaskletsPending();
-
-exit:
-    return retval;
-}
-
-OT_TOOL_WEAK void otTaskletsSignalPending(otInstance *) {}
+#endif // CONFIG_MDNS_SERVER_H_

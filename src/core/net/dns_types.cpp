@@ -836,6 +836,26 @@ exit:
     return error;
 }
 
+Error ResourceRecord::MarkRecordsAsLegacyUnicast(Message &aMessage, uint16_t &aOffset, uint16_t aNumRecords)
+{
+    Error error = kErrorNone;
+
+    while (aNumRecords > 0)
+    {
+        ResourceRecord record;
+        SuccessOrExit(error = Name::ParseName(aMessage, aOffset));
+        SuccessOrExit(error = record.ReadFrom(aMessage, aOffset));
+        record.UnSetCacheFlushBit();
+        record.SetTtl(10);
+        aMessage.WriteBytes(aOffset, &record, sizeof(record));
+        aOffset += static_cast<uint16_t>(record.GetSize());
+        aNumRecords--;
+    }
+
+exit:
+    return error;
+}
+
 Error ResourceRecord::ReadName(const Message &aMessage,
                                uint16_t      &aOffset,
                                uint16_t       aStartOffset,

@@ -834,7 +834,48 @@ public:
     }
 
     /**
-     * Writes bytes to the message.
+     * This method compares the bytes in the message at a given offset with a given byte array.
+     *
+     *
+     * @param[in]  aOffset    Byte offset within the message to read from for the comparison.
+     * @param[in]  aBuf       A pointer to a data buffer to compare with the bytes from message.
+     * @param[in]  aLength    Number of bytes in @p aBuf.
+     * @param[in]  aMatcher   A `ByteMatcher` function pointer to match the bytes. If `nullptr` then bytes are directly
+     *                        compared.
+     *
+     * @returns < 0 if first different byte in @p aMessage is less than byte in @p aBuf,
+     *          >0 otherwise, or 0 if the content match.
+     *
+     */
+    int CompareBytesLexicographically(uint16_t                     aOffset,
+                                      const void                  *aBuf,
+                                      uint16_t                     aLength,
+                                      LexicographicallyByteMatcher aMatcher = nullptr) const;
+
+    /**
+     * This method lexicographically compares the bytes in the message at a given offset with bytes read from another
+     * message.
+     *
+     *
+     * @param[in]  aOffset        Byte offset within the message to read from for the comparison.
+     * @param[in]  aOtherMessage  The other message to compare with.
+     * @param[in]  aOtherOffset   Byte offset within @p aOtherMessage to read from for the comparison.
+     * @param[in]  aLength        Number of bytes to compare.
+     * @param[in]  aMatcher       A `ByteMatcher` function pointer to match the bytes. If `nullptr` then bytes are
+     *                            directly compared.
+     *
+     * @returns <0 if first different byte in @p aMessage is less than byte in @p aOtherMessage.
+     * @returns 0 if there are enough bytes available in both messages and they all match.
+     * @returns >0 if first different byte in @p aMessage is greater than byte in @p aOtherMessage.
+     *
+     */
+    int CompareBytesLexicographically(uint16_t                     aOffset,
+                                      const Message               &aOtherMessage,
+                                      uint16_t                     aOtherOffset,
+                                      uint16_t                     aLength,
+                                      LexicographicallyByteMatcher aMatcher = nullptr) const;
+    /**
+     * This method writes bytes to the message.
      *
      * Will not resize the message. The given data to write (with @p aLength bytes) MUST fit within the
      * existing message buffer (from the given offset @p aOffset up to the message's length).

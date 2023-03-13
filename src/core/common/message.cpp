@@ -693,6 +693,63 @@ exit:
     return (bytesToCompare == 0);
 }
 
+int Message::CompareBytesLexicographically(uint16_t                     aOffset,
+                                           const void                  *aBuf,
+                                           uint16_t                     aLength,
+                                           LexicographicallyByteMatcher aMatcher) const
+{
+    uint16_t       bytesToCompare = aLength;
+    const uint8_t *bufPtr         = reinterpret_cast<const uint8_t *>(aBuf);
+    Chunk          chunk;
+    int            result;
+
+    GetFirstChunk(aOffset, aLength, chunk);
+
+    while (chunk.GetLength() > 0)
+    {
+        result = chunk.CompareBytesLexicographicallyIn(bufPtr, aMatcher);
+        if (!result)
+        {
+            bufPtr += chunk.GetLength();
+            bytesToCompare -= chunk.GetLength();
+            GetNextChunk(aLength, chunk);
+        }
+        else
+        {
+            break;
+        }
+    }
+    return result;
+}
+
+int Message::CompareBytesLexicographically(uint16_t                     aOffset,
+                                           const Message               &aOtherMessage,
+                                           uint16_t                     aOtherOffset,
+                                           uint16_t                     aLength,
+                                           LexicographicallyByteMatcher aMatcher) const
+{
+    uint16_t bytesToCompare = aLength;
+    Chunk    chunk;
+    GetFirstChunk(aOffset, aLength, chunk);
+    int result;
+    while (chunk.GetLength() > 0)
+    {
+        result =
+            aOtherMessage.CompareBytesLexicographically(aOtherOffset, chunk.GetBytes(), chunk.GetLength(), aMatcher);
+        if (!result)
+        {
+            aOtherOffset += chunk.GetLength();
+            bytesToCompare -= chunk.GetLength();
+            GetNextChunk(aLength, chunk);
+        }
+        else
+        {
+            break;
+        }
+    }
+    return result;
+}
+
 void Message::WriteBytes(uint16_t aOffset, const void *aBuf, uint16_t aLength)
 {
     const uint8_t *bufPtr = reinterpret_cast<const uint8_t *>(aBuf);

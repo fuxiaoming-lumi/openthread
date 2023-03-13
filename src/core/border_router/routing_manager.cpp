@@ -1811,6 +1811,16 @@ void RoutingManager::DiscoveredPrefixTable::Entry::SetFrom(const Ip6::Nd::RouteI
     mLastUpdateTime          = TimerMilli::GetNow();
 }
 
+void RoutingManager::DiscoveredPrefixTable::Entry::SetFrom(const PrefixTableEntry &aPrefixTableEntry)
+{
+    mPrefix.Set(aPrefixTableEntry.mPrefix.mPrefix.mFields.m8, aPrefixTableEntry.mPrefix.mLength);
+
+    mType                      = aPrefixTableEntry.mIsOnLink ? kTypeOnLink : kTypeRoute; 
+    mValidLifetime             = aPrefixTableEntry.mValidLifetime;
+    mShared.mPreferredLifetime = aPrefixTableEntry.mPreferredLifetime;
+    mLastUpdateTime            = TimerMilli::GetNow();
+}
+
 bool RoutingManager::DiscoveredPrefixTable::Entry::operator==(const Entry &aOther) const
 {
     return (mType == aOther.mType) && (mPrefix == aOther.mPrefix);
@@ -1847,7 +1857,14 @@ bool RoutingManager::DiscoveredPrefixTable::Entry::IsDeprecated(void) const
 {
     OT_ASSERT(IsOnLinkPrefix());
 
-    return mLastUpdateTime + TimeMilli::SecToMsec(GetPreferredLifetime()) <= TimerMilli::GetNow();
+    if (GetPreferredLifetime() == 0xffffffff)
+    {
+        return false;
+    }
+    else
+    {
+        return mLastUpdateTime + TimeMilli::SecToMsec(GetPreferredLifetime()) <= TimerMilli::GetNow();
+    }
 }
 
 RoutingManager::RoutePreference RoutingManager::DiscoveredPrefixTable::Entry::GetPreference(void) const
@@ -3254,6 +3271,64 @@ exit:
     if (error != kErrorNone)
     {
         LogCrit("Failed to process platform generated ND OnMeshPrefix: %s", ErrorToString(error));
+    }
+}
+
+void RoutingManager::PdPrefixManager::ProcessDhcpPdPrefix(const PrefixTableEntry &aPrefixTableEntry)
+{
+    bool                         currentPrefixUpdated = false;
+    DiscoveredPrefixTable::Entry entry;
+
+    VerifyOrExit(mEnabled, LogWarn("Ignore delegated prefix since PD is disabled."));
+
+    entry.SetFrom(aPrefixTableEntry);
+
+    if (!IsValidPdPrefix(entry.GetPrefix()))
+    {
+        LogWarn("PdPrefixManager: Ignore invalid received prefix %s", entry.GetPrefix().ToString().AsCString());
+        goto exit;
+    }
+
+    entry.mPrefix.SetLength(kOmrPrefixLength);
+    entry.mPrefix.Tidy();
+
+    // Check if there is an update to the current prefix. The valid or preferred lifetime might change.
+    if (entry.GetPrefix() == GetPrefix())
+    {
+        currentPrefixUpdated = true;
+        mPrefix              = entry;
+    }
+    else
+    {
+        VerifyOrExit(!entry.IsDeprecated());
+    }
+
+    if (currentPrefixUpdated && mPrefix.IsDeprecated())
+    {
+        LogInfo("PdPrefixManager: Prefix %s is deprecated", mPrefix.GetPrefix().ToString().AsCString());
+        mPrefix.Clear();
+    }
+    else
+    {
+        mPrefix = entry;
+    }
+
+    // Schedule a policy evaluation only if the Routing manager is running. We may have a case where the DHCPv6
+    // prefix is obtained before the Thread interface is started. In this case, the policy evaluation will be
+    // triggered when starting the Routing manager for the first time.
+    if(Get<RoutingManager>().IsRunning())
+    {
+        Get<RoutingManager>().ScheduleRoutingPolicyEvaluation(kImmediately);
+    }
+
+exit:
+    if (HasPrefix())
+    {
+        mTimer.FireAt(mPrefix.GetStaleTime());
+    }
+    else
+    {
+        mTimer.Stop();
     }
 }
 

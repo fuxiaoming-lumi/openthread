@@ -672,6 +672,7 @@ private:
     static const otNetifMulticastAddress kRealmLocalAllNodesMulticastAddress;
     static const otNetifMulticastAddress kLinkLocalAllRoutersMulticastAddress;
     static const otNetifMulticastAddress kRealmLocalAllRoutersMulticastAddress;
+    static const otNetifMulticastAddress kmDNSLinkLocalMulticastAddress;
 };
 
 /**

@@ -74,6 +74,7 @@ enum DataLengthType : uint8_t
  *
  */
 typedef bool (*ByteMatcher)(uint8_t aFirst, uint8_t aSecond);
+typedef int (*LexicographicallyByteMatcher)(uint8_t aFirst, uint8_t aSecond);
 
 /**
  * Implements common utility methods used by `Data` and `MutableData`.
@@ -87,6 +88,11 @@ protected:
                            const uint8_t *aSecondBuffer,
                            uint16_t       aLength,
                            ByteMatcher    aMatcher);
+
+    static int CompareBytesLexicographically(const uint8_t               *aFirstBuffer,
+                                             const uint8_t               *aSecondBuffer,
+                                             uint16_t                     aLength,
+                                             LexicographicallyByteMatcher aMatcher);
 };
 
 template <DataLengthType kDataLengthType> class MutableData;
@@ -224,7 +230,25 @@ public:
     }
 
     /**
-     * Overloads operator `==` to compare the `Data` content with the content from another one.
+     * This method compares the bytes from a given buffer using a given `Matcher` function with the `Data` content.
+     *
+     * It is up to the caller to ensure that @p aBuffer has enough bytes to compare with the current data length.
+     *
+     * @param[in] aBuffer   A pointer to a buffer to compare with the data.
+     * @param[in] aMatcher  A `ByteMatcher` function to match the bytes. If `nullptr`, bytes are compared directly.
+     *
+     * @retval < 0    First different byte in @p aBuffer is less than byte in 'Data'.
+     * @retval = 0    The bytes in @p aBuffer match the 'Data' content.
+     * @retval > 0    First different byte in @p aBuffer is greater than byte in 'Data'.
+     *
+     */
+    int CompareBytesLexicographicallyIn(const void *aBuffer, LexicographicallyByteMatcher aMatcher)
+    {
+        return CompareBytesLexicographically(static_cast<const uint8_t *>(aBuffer), mBuffer, mLength, aMatcher);
+    }
+
+    /**
+     * This method overloads operator `==` to compare the `Data` content with the content from another one.
      *
      * @param[in] aOtherData   The other `Data` to compare with.
      *

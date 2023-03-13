@@ -369,6 +369,8 @@ bool Address::IsLinkLocalAllRoutersMulticast(void) const { return (*this == GetL
 
 void Address::SetToLinkLocalAllRoutersMulticast(void) { *this = GetLinkLocalAllRoutersMulticast(); }
 
+bool Address::IsmDNSLinkLocalMulticast(void) const { return (*this == GetmDNSLinkLocalMulticast()); }
+
 bool Address::IsRealmLocalMulticast(void) const { return IsMulticast() && (GetScope() == kRealmLocalScope); }
 
 bool Address::IsMulticastLargerThanRealmLocal(void) const { return IsMulticast() && (GetScope() > kRealmLocalScope); }
@@ -712,6 +714,11 @@ const Address &Address::GetRealmLocalAllRoutersMulticast(void)
 const Address &Address::GetRealmLocalAllMplForwarders(void)
 {
     return AsCoreType(&Netif::kRealmLocalAllMplForwardersMulticastAddress.mAddress);
+}
+
+const Address &Address::GetmDNSLinkLocalMulticast(void)
+{
+    return AsCoreType(&Netif::kmDNSLinkLocalMulticastAddress.mAddress);
 }
 
 } // namespace Ip6

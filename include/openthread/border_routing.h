@@ -374,6 +374,18 @@ otError otBorderRoutingGetNextPrefixTableEntry(otInstance                       
 void otBorderRoutingDhcp6PdSetEnabled(otInstance *aInstance, bool aEnabled);
 
 /**
+ * Process a prefix received from the DHCPv6 PD Server. The prefix is received on
+ * the DHCPv6 PD client callback and provided to the Routing Manager via this
+ * API.
+ *
+ * `OPENTHREAD_CONFIG_BORDER_ROUTING_DHCP6_PD_ENABLE` must be enabled.
+ *
+ * @param[in] aInstance   A pointer to an OpenThread instance.
+ * @param[in] aPrefixInfo A pointer to the prefix information structure
+ */
+void otBorderRoutingDhcp6PdProcessPrefix(otInstance *aInstance, otBorderRoutingPrefixTableEntry *aPrefixInfo);
+
+/**
  * @}
  *
  */

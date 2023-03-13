@@ -91,6 +91,7 @@
 #include "net/dnssd_server.hpp"
 #include "net/ip6.hpp"
 #include "net/ip6_filter.hpp"
+#include "net/mdns_server.hpp"
 #include "net/nat64_translator.hpp"
 #include "net/nd_agent.hpp"
 #include "net/netif.hpp"
@@ -399,6 +400,8 @@ private:
     TimerMicro::Scheduler mTimerMicroScheduler;
 #endif
 
+    GenericTasklet        mGenericTasklet;
+
 #if OPENTHREAD_MTD || OPENTHREAD_FTD
     // Random::Manager is initialized before other objects. Note that it
     // requires MbedTls which itself may use Heap.
@@ -463,6 +466,9 @@ private:
 
 #if OPENTHREAD_CONFIG_DNSSD_SERVER_ENABLE
     Dns::ServiceDiscovery::Server mDnssdServer;
+#endif
+#if OPENTHREAD_CONFIG_MDNS_SERVER_ENABLE
+    Dns::ServiceDiscovery::MdnsServer mMdnsServer;
 #endif
 
 #if OPENTHREAD_CONFIG_DNS_DSO_ENABLE
@@ -842,6 +848,12 @@ template <> inline Utils::SrpClientBuffers &Instance::Get(void) { return mSrpCli
 template <> inline Dns::ServiceDiscovery::Server &Instance::Get(void) { return mDnssdServer; }
 #endif
 
+#if OPENTHREAD_CONFIG_MDNS_SERVER_ENABLE
+template <> inline Dns::ServiceDiscovery::MdnsServer &Instance::Get(void) { return mMdnsServer; }
+template <> inline Dns::ServiceDiscovery::MdnsServer::Announcer &Instance::Get(void) { return mMdnsServer.GetAnnouncer(); }
+template <> inline Dns::ServiceDiscovery::MdnsServer::Prober &Instance::Get(void) { return mMdnsServer.GetProber(); }
+#endif
+
 #if OPENTHREAD_CONFIG_DNS_DSO_ENABLE
 template <> inline Dns::Dso &Instance::Get(void) { return mDnsDso; }
 #endif
@@ -993,6 +1005,8 @@ template <> inline Mac::SubMac &Instance::Get(void) { return mLinkRaw.mSubMac; }
 template <> inline Tasklet::Scheduler &Instance::Get(void) { return mTaskletScheduler; }
 
 template <> inline TimerMilli::Scheduler &Instance::Get(void) { return mTimerMilliScheduler; }
+
+template <> inline GenericTasklet &Instance::Get(void) { return mGenericTasklet; }
 
 #if OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE
 template <> inline TimerMicro::Scheduler &Instance::Get(void) { return mTimerMicroScheduler; }

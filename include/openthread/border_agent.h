@@ -69,6 +69,8 @@ struct otBorderAgentId
     uint8_t mId[OT_BORDER_AGENT_ID_LENGTH];
 } OT_TOOL_PACKED_END;
 
+typedef struct otBorderAgentId otBorderAgentId;
+
 /**
  * Defines the Border Agent state.
  *

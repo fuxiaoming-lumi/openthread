@@ -69,6 +69,7 @@ namespace ServiceDiscovery {
 class Server : public InstanceLocator, private NonCopyable
 {
     friend class Srp::Server;
+    friend class MdnsServer;
 
 public:
     /**
@@ -439,6 +440,8 @@ private:
     bool        IsRunning(void) const { return mSocket.IsBound(); }
     static void HandleUdpReceive(void *aContext, otMessage *aMessage, const otMessageInfo *aMessageInfo);
     void        HandleUdpReceive(Message &aMessage, const Ip6::MessageInfo &aMessageInfo);
+
+    static Error ConvertDomainName(char *aName, char *aHostName, NameCompressInfo &aCompressInfo);
     void ProcessQuery(const Header &aRequestHeader, Message &aRequestMessage, const Ip6::MessageInfo &aMessageInfo);
     static Header::Response AddQuestions(const Header     &aRequestHeader,
                                          const Message    &aRequestMessage,
@@ -461,18 +464,21 @@ private:
                                             uint16_t          aPriority,
                                             uint16_t          aWeight,
                                             uint16_t          aPort,
-                                            NameCompressInfo &aCompressInfo);
+                                            NameCompressInfo &aCompressInfo,
+                                            bool              aIsUniqueRR = false);
     static Error            AppendTxtRecord(Message          &aMessage,
                                             const char       *aInstanceName,
                                             const void       *aTxtData,
                                             uint16_t          aTxtLength,
                                             uint32_t          aTtl,
-                                            NameCompressInfo &aCompressInfo);
+                                            NameCompressInfo &aCompressInfo,
+                                            bool              aIsUniqueRR = false);
     static Error            AppendAaaaRecord(Message            &aMessage,
                                              const char         *aHostName,
                                              const Ip6::Address &aAddress,
                                              uint32_t            aTtl,
-                                             NameCompressInfo   &aCompressInfo);
+                                             NameCompressInfo   &aCompressInfo,
+                                             bool                aIsUniqueRR = false);
     static Error            AppendServiceName(Message &aMessage, const char *aName, NameCompressInfo &aCompressInfo);
     static Error            AppendInstanceName(Message &aMessage, const char *aName, NameCompressInfo &aCompressInfo);
     static Error            AppendHostName(Message &aMessage, const char *aName, NameCompressInfo &aCompressInfo);
@@ -539,6 +545,7 @@ private:
     static const char kDnssdProtocolTcp[];
     static const char kDnssdSubTypeLabel[];
     static const char kDefaultDomainName[];
+    static const char kDefaultMcastDomainName[];
 
     Ip6::Udp::Socket mSocket;
 

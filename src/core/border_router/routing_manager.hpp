@@ -459,6 +459,19 @@ public:
     }
 
     /**
+     * Handles a prefix delegated from the DHCPv6 server. The prefix is received on the DHCPv6 PD client callback.
+     *
+     * Note: This method is a part of DHCPv6 PD support on Thread border routers.
+     *
+     * @param[in] aPrefixInfo  A pointer to the prefix information received from the DHCPv6 PD server.
+     *
+     */
+    void ProcessDhcpPdPrefix(const PrefixTableEntry *aPrefixInfo)
+    {
+        mPdPrefixManager.ProcessDhcpPdPrefix(*aPrefixInfo);
+    }
+
+    /**
      * Enables / Disables the functions for DHCPv6 PD.
      *
      * @param[in] aEnabled  Whether to accept platform generated RA messages.
@@ -653,6 +666,7 @@ private:
             void               SetFrom(const Ip6::Nd::RouterAdvertMessage::Header &aRaHeader);
             void               SetFrom(const Ip6::Nd::PrefixInfoOption &aPio);
             void               SetFrom(const Ip6::Nd::RouteInfoOption &aRio);
+            void               SetFrom(const PrefixTableEntry &aPrefixTableEntry);
             Type               GetType(void) const { return mType; }
             bool               IsOnLinkPrefix(void) const { return (mType == kTypeOnLink); }
             bool               IsRoutePrefix(void) const { return (mType == kTypeRoute); }
@@ -1066,6 +1080,7 @@ private:
         }
 
         void  ProcessPlatformGeneratedRa(const uint8_t *aRouterAdvert, uint16_t aLength);
+        void  ProcessDhcpPdPrefix(const PrefixTableEntry &aPrefixTableEntry);
         Error GetPrefixInfo(PrefixTableEntry &aInfo) const;
         void  HandleTimer(void) { WithdrawPrefix(); }
 

@@ -57,4 +57,25 @@ exit:
     return matches;
 }
 
+int DataUtils::CompareBytesLexicographically(const uint8_t               *aFirstBuffer,
+                                             const uint8_t               *aSecondBuffer,
+                                             uint16_t                     aLength,
+                                             LexicographicallyByteMatcher aMatcher)
+{
+    int matches = 0;
+    if (aMatcher == nullptr)
+    {
+        matches = memcmp(aFirstBuffer, aSecondBuffer, aLength);
+        ExitNow();
+    }
+
+    while (aLength-- != 0)
+    {
+        aMatcher(*aFirstBuffer++, *aSecondBuffer++);
+    }
+
+exit:
+    return matches;
+}
+
 } // namespace ot

@@ -722,7 +722,12 @@ public:
     void SetToLinkLocalAllRoutersMulticast(void);
 
     /**
-     * Indicates whether or not the IPv6 address is a realm-local multicast address.
+     * This method indicates whether or not the IPv6 address is an mDNS link-local multicast address (ff02::fb).
+     */
+    bool IsmDNSLinkLocalMulticast(void) const;
+
+    /**
+     * This method indicates whether or not the IPv6 address is a realm-local multicast address.
      *
      * @retval TRUE   If the IPv6 address is a realm-local multicast address.
      * @retval FALSE  If the IPv6 address scope is not a realm-local multicast address.
@@ -1043,6 +1048,7 @@ private:
     static const Address &GetRealmLocalAllNodesMulticast(void);
     static const Address &GetRealmLocalAllRoutersMulticast(void);
     static const Address &GetRealmLocalAllMplForwarders(void);
+    static const Address &GetmDNSLinkLocalMulticast(void);
 
     static void CopyBits(uint8_t *aDst, const uint8_t *aSrc, uint8_t aNumBits);
 
