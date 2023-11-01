@@ -492,7 +492,6 @@ void Server::CommitSrpUpdate(Error                    aError,
     else if (existingHost != nullptr)
     {
         SuccessOrExit(aError = existingHost->MergeServicesAndResourcesFrom(aHost));
-        shouldFreeHost = false;
     }
     else
     {

@@ -445,6 +445,7 @@ public:
         bool                            Matches(const uint32_t aId) const { return mId == aId; }
         uint32_t                        GetId(void) { return mId; }
         const otSrpServerHost          *GetHost(void) { return mHost; }
+        const char                     *GetHostName() {return mHostName.AsCString();}
         void                            SetService(const otSrpServerService *aService) { mService = aService; }
         LinkedList<MdnsServer::Service> GetServiceList(void) { return mServiceList; }
         const otSrpServerService       *GetService(void) { return mService; }
@@ -459,6 +460,7 @@ public:
     private:
         uint32_t                        mId;
         const otSrpServerHost          *mHost;
+        Heap::String                    mHostName;
         const otSrpServerService       *mService;
         LinkedList<MdnsServer::Service> mServiceList;
         State                           mState;
@@ -723,7 +725,7 @@ private:
     Message *CreateHostAndServicesAnnounceMessage(OutstandingUpdate *aUpdate);
     Message *CreateHostAndServicesPublishMessage(OutstandingUpdate *aUpdate);
     Error    PublishHostAndServices(OutstandingUpdate *aUpdate);
-    Message *CreateSrpAnnounceMessage(const otSrpServerHost *aHost);
+    Message *CreateSrpAnnounceMessage(const char *aHostName);
     Message *CreateSrpPublishMessage(const otSrpServerHost *aHost);
     Error    PublishFromSrp(const otSrpServerHost *aHost);
     bool     AddressIsFromLocalSubnet(const Ip6::Address &srcAddr);
